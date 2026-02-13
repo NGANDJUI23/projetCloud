@@ -21,7 +21,7 @@ jobs:
       #     registry: https://registry.groupe5.com
 
       - name: Build Gitea Image
-        run: docker build -t registry.groupe5.com/gitea:gitea-${{ github.sha }} ./gitea
+        run: docker build -t registry.groupe5.com/gitea:gitea-${{ github.sha }} .
 
       - name: Push Gitea Image
         run: docker push registry.groupe5.com/gitea:gitea-${{ github.sha }}
