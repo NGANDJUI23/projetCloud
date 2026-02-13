@@ -16,8 +16,8 @@ jobs:
       - name: Docker Login
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          # username: ${{ secrets.DOCKER_USER }}
+          # password: ${{ secrets.DOCKER_PASSWORD }}
           registry: https://registry.groupe5.com
 
       - name: Build Gitea Image
