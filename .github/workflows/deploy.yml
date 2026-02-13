@@ -18,7 +18,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          registry: registry.groupe5.com
+          registry: https://registry.groupe5.com
 
       - name: Build Gitea Image
         run: docker build -t registry.groupe5.com/gitea:gitea-${{ github.sha }} ./gitea
