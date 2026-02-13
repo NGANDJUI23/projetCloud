@@ -1,0 +1,8 @@
+tls:
+  certificates:
+    - certFile: /certs/git.groupe5.com.pem
+      keyFile: /certs/git.groupe5.com-key.pem
+    - certFile: /certs/registry.groupe5.com.pem
+      keyFile: /certs/registry.groupe5.com-key.pem
+    - certFile: /certs/traefik.groupe5.com.pem
+      keyFile: /certs/traefik.groupe5.com-key.pem

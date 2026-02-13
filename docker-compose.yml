@@ -1,0 +1,124 @@
+networks:
+  web:
+    external: true
+
+volumes:
+  gitea-data:
+  postgres-data:
+  harbor-data:
+
+services:
+
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    networks:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--api.insecure=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.filename=/dynamic_tls.yml"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.http.tls=true"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.groupe5.com`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/certs:/certs:ro
+      - ./traefik/dynamic_tls.yml:/dynamic_tls.yml:ro
+
+  postgres:
+    image: postgres:16
+    container_name: gitea-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: gitea
+      POSTGRES_USER: gitea
+      POSTGRES_PASSWORD: strongpassword
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - web
+
+  gitea:
+    image: gitea/gitea
+    container_name: gitea
+    depends_on:
+      - postgres
+    environment:
+      USER_UID: 1000
+      USER_GID: 1000
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: postgres:5432
+      GITEA__database__NAME: gitea
+      GITEA__database__USER: gitea
+      GITEA__database__PASSWD: strongpassword
+      GITEA__server__ROOT_URL: https://git.groupe5.com
+      GITEA__server__DOMAIN: git.groupe5.com
+      GITEA__server__SSH_DOMAIN: git.groupe5.com
+      GITEA__server__PROTOCOL: http
+      GITEA__server__HTTP_PORT: 3000
+      GITEA__server__SSH_PORT: 222
+    volumes:
+      - gitea-data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitea.rule=Host(`git.groupe5.com`)"
+      - "traefik.http.routers.gitea.entrypoints=websecure"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Host=git.groupe5.com"
+      - "traefik.http.routers.gitea.middlewares=gitea-headers"
+    networks:
+      - web
+    restart: always
+
+  runner:
+    image: gitea/act_runner:latest
+    container_name: gitea-runner
+    depends_on:
+      - gitea
+    environment:
+      # CONFIG_FILE: /config.yaml
+      GITEA_INSTANCE_URL: http://gitea:3000
+      GITEA_RUNNER_REGISTRATION_TOKEN: OLOddxQTx6kKLGNtofBgAHSMZtAQbkGT1I33TO1y
+      GITEA_RUNNER_NAME: runner-prod
+    volumes:
+      # - ./config.yaml:/config.yaml
+      - ./runner-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - web
+    restart: always
+
+  registry:
+    image: registry:2
+    container_name: registry
+    restart: always
+    # ports:
+    #   - "5000:5000"
+    volumes:
+      - ./registry-data:/var/lib/registry
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry.rule=Host(`registry.groupe5.com`)"
+      - "traefik.http.routers.registry.entrypoints=websecure"
+      - "traefik.http.services.registry.loadbalancer.server.port=5000"
+      - "traefik.http.middlewares.registry-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.registry-headers.headers.customrequestheaders.X-Forwarded-Host=registry.groupe5.com"
+      - "traefik.http.routers.registry.middlewares=registry-headers"
