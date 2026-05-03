@@ -47,7 +47,7 @@ jobs:
           docker compose up -d
           
           # Logs pour vérification
-          docker compose logs -f traefik gitea postgres | head -50
+          docker compose logs -f gitea postgres | head -50
         "
     
     - name: Health Check
