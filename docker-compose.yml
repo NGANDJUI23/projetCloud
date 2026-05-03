@@ -23,7 +23,7 @@ services:
       - "--providers.docker=true"
       - "--api.insecure=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--providers.file.filename=/dynamic_tls.yml"
+      - "--providers.file.filename=/traefik/dynamic_tls.yml"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
@@ -38,7 +38,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/certs:/certs:ro
-      - ./traefik/dynamic_tls.yml:/dynamic_tls.yml:ro
+      - ./traefik/dynamic_tls.yml:/traefik/dynamic_tls.yml:ro
 
   postgres:
     image: postgres:16
