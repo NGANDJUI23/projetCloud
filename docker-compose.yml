@@ -7,9 +7,6 @@ volumes:
   postgres-data:
   harbor-data:
 
-env_file:
-  - .env
-
 services:
 
   traefik:
