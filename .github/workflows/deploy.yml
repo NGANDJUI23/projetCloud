@@ -54,5 +54,5 @@ jobs:
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           sleep 30
           curl -f http://localhost:3000 || exit 1
-          echo '✅ Déploiement réussi !'
+          echo '✅ Déploiement réussi dans AWS !'
         "
