@@ -65,8 +65,6 @@ services:
     depends_on:
       - postgres
     ports:
-      - "3000:3000"  # Gitea Web UI
-      - "222:22"     # Gitea SSH
     environment:
       USER_UID: 1000
       USER_GID: 1000
