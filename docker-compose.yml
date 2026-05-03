@@ -9,39 +9,39 @@ volumes:
 
 services:
 
-  # traefik:
-  #   image: traefik:latest
-  #   container_name: traefik
-  #   restart: unless-stopped
-  #   networks:
-  #     - web
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #     - "8080:8080"  # Dashboard Traefik
-  #   command:
-  #     - "--api.dashboard=true"
-  #     - "--providers.docker=true"
-  #     - "--api.insecure=true"
-  #     - "--providers.docker.exposedbydefault=false"
-  #     - "--providers.file.filename=/traefik/dynamic_tls.yml"
-  #     - "--providers.file.directory=/traefik"
-  #     - "--entrypoints.web.address=:80"
-  #     - "--entrypoints.websecure.address=:443"
-  #     - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-  #     - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-  #     - "--entrypoints.websecure.http.tls=true"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.groupe5.com`)"
-  #     - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
-  #     - "traefik.http.routers.traefik-dashboard.service=api@internal"
-  #     - "traefik.http.routers.traefik-dashboard.tls=true"
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - ./traefik/certs:/certs:ro
-  #     - ./traefik/dynamic_tls.yml:/traefik/dynamic_tls.yml:ro
-  #     - ./traefik:/traefik:ro
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    networks:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Dashboard Traefik
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--api.insecure=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.filename=/traefik/dynamic_tls.yml"
+      - "--providers.file.directory=/traefik"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.http.tls=true"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.groupe5.com`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/certs:/certs:ro
+      - ./traefik/dynamic_tls.yml:/traefik/dynamic_tls.yml:ro
+      - ./traefik:/traefik:ro
 
 
   postgres:
@@ -80,14 +80,14 @@ services:
       GITEA__server__SSH_PORT: ${GITEA_SSH_PORT}
     volumes:
       - gitea-data:/data
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.gitea.rule=Host(`35.175.207.117`)"
-    #   - "traefik.http.routers.gitea.entrypoints=websecure"
-    #   - "traefik.http.services.gitea.loadbalancer.server.port=3000"
-    #   - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-    #   - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Host=35.175.207.117"
-    #   - "traefik.http.routers.gitea.middlewares=gitea-headers"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitea.rule=Host(`git.groupe5.com`)"
+      - "traefik.http.routers.gitea.entrypoints=websecure"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Host=git.groupe5.com"
+      - "traefik.http.routers.gitea.middlewares=gitea-headers"
     networks:
       - web
     restart: always
@@ -99,8 +99,8 @@ services:
       - gitea
     environment:
       # CONFIG_FILE: /config.yaml
-      GITEA_INSTANCE_URL: ${GITEA_INSTANCE_URL}
-      GITEA_RUNNER_REGISTRATION_TOKEN: ${GITEA_RUNNER_REGISTRATION_TOKEN}
+      # GITEA_INSTANCE_URL: ${GITEA_INSTANCE_URL}
+      # GITEA_RUNNER_REGISTRATION_TOKEN: ${GITEA_RUNNER_REGISTRATION_TOKEN}
       GITEA_RUNNER_NAME: ${GITEA_RUNNER_NAME}
     volumes:
       # - ./config.yaml:/config.yaml
