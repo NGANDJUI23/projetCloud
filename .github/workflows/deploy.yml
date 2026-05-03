@@ -53,6 +53,6 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           sleep 30
-          curl -f http://localhost:3000 || exit 1
+          curl -f -L -H 'Host: git.groupe5.com' http://127.0.0.1/ || exit 1
           echo '✅ Déploiement réussi dans AWS !'
         "
