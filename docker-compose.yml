@@ -48,6 +48,8 @@ services:
       POSTGRES_DB: gitea
       POSTGRES_USER: gitea
       POSTGRES_PASSWORD: strongpassword
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -104,21 +106,23 @@ services:
       - web
     restart: always
 
-  registry:
-    image: registry:2
-    container_name: registry
-    restart: always
-    # ports:
-    #   - "5000:5000"
-    volumes:
-      - ./registry-data:/var/lib/registry
-    networks:
-      - web
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.registry.rule=Host(`registry.groupe5.com`)"
-      - "traefik.http.routers.registry.entrypoints=websecure"
-      - "traefik.http.services.registry.loadbalancer.server.port=5000"
-      - "traefik.http.middlewares.registry-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.registry-headers.headers.customrequestheaders.X-Forwarded-Host=registry.groupe5.com"
-      - "traefik.http.routers.registry.middlewares=registry-headers"
+  # registry:
+  #   image: registry:2
+  #   container_name: registry
+  #   restart: always
+  #   # ports:
+  #   #   - "5000:5000"
+  #   environment:
+  #     - REGISTRY_HTTP_SECRET=ivan-2003Kk
+  #   volumes:
+  #     - ./registry-data:/var/lib/registry
+  #   networks:
+  #     - web
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.registry.rule=Host(`registry.groupe5.com`)"
+  #     - "traefik.http.routers.registry.entrypoints=websecure"
+  #     - "traefik.http.services.registry.loadbalancer.server.port=5000"
+  #     - "traefik.http.middlewares.registry-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+  #     - "traefik.http.middlewares.registry-headers.headers.customrequestheaders.X-Forwarded-Host=registry.groupe5.com"
+  #     - "traefik.http.routers.registry.middlewares=registry-headers"
