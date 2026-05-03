@@ -7,38 +7,9 @@ on:
 
 env:
   COMPOSE_FILE: docker-compose.yml
-  SERVER_IP: 35.175.207.117
-  SERVER_USER: ubuntu
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Build Docker Images
-      run: docker build -t devops-gitea .
-
-    - name: Tag image
-      run: docker tag devops-gitea:latest ${{ secrets.ECR_REGISTRY }}/devops-gitea:latest
-
-    - name: Push to Amazon ECR
-      run: docker push ${{ secrets.ECR_REGISTRY }}/devops-gitea:latest
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     
     steps:
@@ -51,41 +22,25 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         known_hosts: unnecessary
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-
     - name: Create Docker Network
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_IP }} "
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           docker network create web || true
         "
 
     - name: Copy Docker Compose & Configs
       run: |
-        scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ env.SERVER_USER }}@${{ env.SERVER_IP }}:/tmp/
-        scp -o StrictHostKeyChecking=no traefik/dynamic_tls.yml ${{ env.SERVER_USER }}@${{ env.SERVER_IP }}:/tmp/ || true
-        scp -o StrictHostKeyChecking=no traefik/certs/* ${{ env.SERVER_USER }}@${{ env.SERVER_IP }}:/tmp/traefik/certs/ || true
-
-    - name: Login to Amazon ECR on Server
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_IP }} "
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-        "
+        scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/
+        scp -o StrictHostKeyChecking=no traefik/dynamic_tls.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/ || true
+        scp -o StrictHostKeyChecking=no traefik/certs/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/traefik/certs/ || true
 
     - name: Deploy Stack
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_IP }} "
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           cd /tmp
           
           # Stop & remove ancien stack
           docker compose down || true
-          
-          # Pull nouvelle image
-          docker pull ${{ secrets.ECR_REGISTRY }}/devops-gitea:latest || true
           
           # Deploy nouveau stack
           docker compose up -d
@@ -96,7 +51,7 @@ jobs:
     
     - name: Health Check
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_IP }} "
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           sleep 30
           curl -f http://localhost:3000 || exit 1
           echo '✅ Déploiement réussi !'
