@@ -39,6 +39,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/certs:/certs:ro
       - ./traefik/dynamic_tls.yml:/dynamic_tls.yml:ro
+      - ./traefik/acme.json:/acme.json
 
   postgres:
     image: postgres:16
