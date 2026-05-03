@@ -83,7 +83,7 @@ services:
       GITEA__server__SSH_PORT: ${GITEA_SSH_PORT}
     volumes:
       - gitea-data:/data
-    labels:
+    # labels:
       # - "traefik.enable=true"
       # - "traefik.http.routers.gitea.rule=Host(`git.groupe5.com`)"
       # - "traefik.http.routers.gitea.entrypoints=websecure"
