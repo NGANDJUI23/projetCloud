@@ -83,14 +83,14 @@ services:
       GITEA__server__SSH_PORT: ${GITEA_SSH_PORT}
     volumes:
       - gitea-data:/data
-    # labels:
-      # - "traefik.enable=true"
-      # - "traefik.http.routers.gitea.rule=Host(`git.groupe5.com`)"
-      # - "traefik.http.routers.gitea.entrypoints=websecure"
-      # - "traefik.http.services.gitea.loadbalancer.server.port=3000"
-      # - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-      # - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Host=git.groupe5.com"
-      # - "traefik.http.routers.gitea.middlewares=gitea-headers"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitea.rule=Host(`35.175.207.117`)"
+      - "traefik.http.routers.gitea.entrypoints=websecure"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Host=35.175.207.117"
+      - "traefik.http.routers.gitea.middlewares=gitea-headers"
     networks:
       - web
     restart: always
