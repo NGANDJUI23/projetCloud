@@ -84,7 +84,7 @@ services:
       - gitea-data:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gitea.rule=Host(`${GITEA_ROOT_URL}`)"
+      - "traefik.http.routers.gitea.rule=Host(`${GITEA_DOMAIN}`)"
       - "traefik.http.routers.gitea.entrypoints=websecure"
       - "traefik.http.services.gitea.loadbalancer.server.port=3000"
       - "traefik.http.middlewares.gitea-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
