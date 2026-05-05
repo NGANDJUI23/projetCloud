@@ -26,15 +26,16 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           docker network create web || true
+          cp ~/projetcloud/.env ~/
           rm -r ~/projetcloud
           mkdir -p ~/projetcloud/traefik/certs
+          cp ~/.env ~/projetcloud/
         "
 
     - name: Copy Docker Compose & Configs
       run: |
         
         scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/
-        scp -o StrictHostKeyChecking=no .env ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/|| true
         scp -o StrictHostKeyChecking=no traefik/dynamic_tls.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/ || true
         scp -o StrictHostKeyChecking=no traefik/certs/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/traefik/certs/ || true
 
