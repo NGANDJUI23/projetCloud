@@ -26,6 +26,7 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           docker network create web || true
+          rm -r ~/projetcloud
           mkdir -p ~/projetcloud/traefik/certs
         "
 
@@ -44,7 +45,6 @@ jobs:
           
           # Stop & remove ancien stack
           docker compose down || true
-          rm -r ~/projetcloud
           
           # Deploy nouveau stack
           docker compose up -d
