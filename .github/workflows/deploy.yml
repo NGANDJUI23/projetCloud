@@ -30,15 +30,19 @@ jobs:
 
     - name: Copy Docker Compose & Configs
       run: |
-        scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/
-        scp -o StrictHostKeyChecking=no .env ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/ || true
-        scp -o StrictHostKeyChecking=no traefik/dynamic_tls.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/ || true
-        scp -o StrictHostKeyChecking=no traefik/certs/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/traefik/certs/ || true
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+          mkdir ~/projetcloud
+        "
+        scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/
+        scp -o StrictHostKeyChecking=no .env ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/|| true
+        scp -o StrictHostKeyChecking=no traefik/dynamic_tls.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/ || true
+        scp -o StrictHostKeyChecking=no traefik/certs/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/traefik/certs/ || true
+        scp -o StrictHostKeyChecking=no runner-data/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/ || true
 
     - name: Deploy Stack
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
-          cd /tmp
+          cd ~/projetcloud
           
           # Stop & remove ancien stack
           docker compose down || true
@@ -48,6 +52,42 @@ jobs:
           
           # Logs pour vérification
           docker compose logs -f gitea postgres | head -50
+        "
+
+    - name: Push image on AWS ECR
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 
+        "
+          
+          # Configurations AWS
+          aws configure set aws_access_key_id ${{secrets.AWS_ACCESS_KEY_ID}} 
+          aws configure set aws_secret_access_key ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws configure set default.region ${{secrets.AWS_DEFAULT_REGION}}
+
+          # Connexion à ECR
+          aws ecr get-login-password --region ${{secrets.AWS_DEFAULT_REGION}} | docker login --username AWS --password-stdin ${{secrets.ECR_REGISTRY}}
+          
+          # Liste des images locales à traiter
+          for image_full in gitea/gitea:latest postgres:16-alpine; do
+          
+            # Extraction du nom du repo (ex: gitea/gitea -> gitea) et du tag
+            repo_name=\$(echo \$image_full | cut -d/ -f2 | cut -d: -f1)
+            tag=\$(echo \$image_full | cut -d: -f2)
+            
+            # 1. Vérifier si le dépôt existe, sinon le créer
+            if ! aws ecr describe-repositories --repository-names \$repo_name > /dev/null 2>&1; then
+                echo \"Création du dépôt ECR: \$repo_name\"
+                aws ecr create-repository --repository-name \$repo_name
+            fi
+            
+            # 2. Préparation du nom pour ECR
+            target_image=\"${{secrets.ECR_REGISTRY}}/\$repo_name:\$tag\"
+            
+            # 3. Tagging et Push
+            docker tag \$image_full \$target_image
+            docker push \$target_image
+          done
+                
         "
     
     - name: Health Check
