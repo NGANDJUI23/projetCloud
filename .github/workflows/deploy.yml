@@ -44,6 +44,7 @@ jobs:
           
           # Stop & remove ancien stack
           docker compose down || true
+          rm -r ~/projetcloud
           
           # Deploy nouveau stack
           docker compose up -d
@@ -66,7 +67,7 @@ jobs:
           
           # Liste des images locales à traiter
           for image_full in gitea/gitea:latest postgres:16-alpine; do
-          
+
             # Extraction du nom du repo (ex: gitea/gitea -> gitea) et du tag
             repo_name=\$(echo \$image_full | cut -d/ -f2 | cut -d: -f1)
             tag=\$(echo \$image_full | cut -d: -f2)
