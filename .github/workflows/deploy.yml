@@ -72,6 +72,8 @@ jobs:
             repo_name=\$(echo \$image_full | cut -d/ -f2 | cut -d: -f1)
             tag=\$(echo \$image_full | cut -d: -f2)
 
+            echo "Traitement du repo_name: \$repo_name, tag: \$tag"
+
             # 1. Vérifier si le dépôt existe, sinon le créer
             if ! aws ecr describe-repositories --repository-names \$repo_name > /dev/null 2>&1; then
                 echo \"Création du dépôt ECR: \$repo_name\"
