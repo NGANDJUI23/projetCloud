@@ -34,7 +34,7 @@ jobs:
         
         scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/
         scp -o StrictHostKeyChecking=no .env ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/|| true
-        scp -o StrictHostKeyChecking=no traefik/dynamic_tls.ym ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/ || true
+        scp -o StrictHostKeyChecking=no traefik/dynamic_tls.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/ || true
         scp -o StrictHostKeyChecking=no traefik/certs/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/traefik/certs/ || true
 
     - name: Deploy Stack
