@@ -26,13 +26,12 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           docker network create web || true
+          mkdir ~/projetcloud/
         "
 
     - name: Copy Docker Compose & Configs
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
-          mkdir ~/projetcloud
-        "
+        
         scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/
         scp -o StrictHostKeyChecking=no .env ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/|| true
         scp -o StrictHostKeyChecking=no traefik/dynamic_tls.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/projetcloud/ || true
@@ -69,7 +68,7 @@ jobs:
           
           # Liste des images locales à traiter
           for image_full in gitea/gitea:latest postgres:16-alpine; do
-          
+
             # Extraction du nom du repo (ex: gitea/gitea -> gitea) et du tag
             repo_name=\$(echo \$image_full | cut -d/ -f2 | cut -d: -f1)
             tag=\$(echo \$image_full | cut -d: -f2)
