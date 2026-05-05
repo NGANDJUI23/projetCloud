@@ -53,38 +53,38 @@ jobs:
           docker compose logs -f gitea postgres | head -50
         "
 
-    - name: Push image on AWS ECR
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+    # - name: Push image on AWS ECR
+    #   run: |
+    #     ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
           
-          # Configurations AWS
-          aws configure set aws_access_key_id ${{secrets.AWS_ACCESS_KEY_ID}} 
-          aws configure set aws_secret_access_key ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws configure set default.region ${{secrets.AWS_DEFAULT_REGION}}
+    #       # Configurations AWS
+    #       aws configure set aws_access_key_id ${{secrets.AWS_ACCESS_KEY_ID}} 
+    #       aws configure set aws_secret_access_key ${{secrets.AWS_SECRET_ACCESS_KEY}}
+    #       aws configure set default.region ${{secrets.AWS_DEFAULT_REGION}}
 
-          # Connexion à ECR
-          aws ecr get-login-password --region ${{secrets.AWS_DEFAULT_REGION}} | docker login --username AWS --password-stdin ${{secrets.ECR_REGISTRY}}
+    #       # Connexion à ECR
+    #       aws ecr get-login-password --region ${{secrets.AWS_DEFAULT_REGION}} | docker login --username AWS --password-stdin ${{secrets.ECR_REGISTRY}}
           
-          # Liste des images locales à traiter
-          for image_full in gitea/gitea:latest postgres:16-alpine; do
+    #       # Liste des images locales à traiter
+    #       for image_full in gitea/gitea:latest postgres:16-alpine; do
 
-            # Extraction du nom du repo (ex: gitea/gitea -> gitea) et du tag
-            repo_name=\$(echo \$image_full | cut -d/ -f2 | cut -d: -f1)
-            tag=\$(echo \$image_full | cut -d: -f2)
+    #         # Extraction du nom du repo (ex: gitea/gitea -> gitea) et du tag
+    #         repo_name=\$(echo \$image_full | cut -d/ -f2 | cut -d: -f1)
+    #         tag=\$(echo \$image_full | cut -d: -f2)
 
-            # 1. Vérifier si le dépôt existe, sinon le créer
-            if ! aws ecr describe-repositories --repository-names \$repo_name > /dev/null 2>&1; then
-                echo \"Création du dépôt ECR: \$repo_name\"
-                aws ecr create-repository --repository-name \$repo_name
-            fi
-            # 2. Préparation du nom pour ECR
-            target_image=\"${{secrets.ECR_REGISTRY}}/\$repo_name:\$tag\"
+    #         # 1. Vérifier si le dépôt existe, sinon le créer
+    #         if ! aws ecr describe-repositories --repository-names \$repo_name > /dev/null 2>&1; then
+    #             echo \"Création du dépôt ECR: \$repo_name\"
+    #             aws ecr create-repository --repository-name \$repo_name
+    #         fi
+    #         # 2. Préparation du nom pour ECR
+    #         target_image=\"${{secrets.ECR_REGISTRY}}/\$repo_name:\$tag\"
             
-            # 3. Tagging et Push
-            docker tag \$image_full \$target_image
-            docker push \$target_image
-          done
-        "
+    #         # 3. Tagging et Push
+    #         docker tag \$image_full \$target_image
+    #         docker push \$target_image
+    #       done
+    #     "
     
     - name: Health Check
       run: |
