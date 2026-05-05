@@ -91,7 +91,6 @@ jobs:
     - name: Health Check
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
-          sleep 30
           docker ps || exit 1
           echo '✅ Déploiement réussi dans AWS !'
         "
