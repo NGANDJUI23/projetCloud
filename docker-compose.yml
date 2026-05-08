@@ -33,7 +33,7 @@ services:
       - "--entrypoints.websecure.http.tls=true"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.groupe5.com`)"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${GITEA_ROOT_URL}`)"
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.tls=true"
